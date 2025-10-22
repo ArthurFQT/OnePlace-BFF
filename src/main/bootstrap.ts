@@ -8,35 +8,40 @@ import { registerRoutes } from '@/shared/http/docs/decorators/routes-loader';
 import app from './app';
 
 export async function bootstrap() {
-  await registerSharedProviders();
-  await registerRoutes(app);
-  app.use(handleError);
-  const PORT = process.env.PORT || 3333;
+  try {
+    await registerSharedProviders();
+    await registerRoutes(app);
+    app.use(handleError);
 
-  const server = app.listen(PORT, () => {
-    // console.log(`🔥 Server is running at http://localhost:${PORT}`);
-  });
+    const PORT = process.env.PORT || 3333;
 
-  process.on('SIGINT', () => {
-    // console.log('🔌 Encerrando aplicação via SIGINT (Ctrl+C)...');
-    shutdown(server);
-  });
+    const server = app.listen(PORT, () => {
+      console.log(`🔥 Server is running at http://localhost:${PORT}`);
+    });
 
-  process.on('SIGTERM', () => {
-    // 🛑 Encerrando aplicação via SIGTERM...
-    // Use a logging utility here if available, or remove this line to avoid console statements.
-    shutdown(server);
-  });
+    process.on('SIGINT', () => {
+      console.log('🔌 Encerrando aplicação via SIGINT (Ctrl+C)...');
+      shutdown(server);
+    });
 
-  process.on('uncaughtException', err => {
-    // console.log({ err }, '💥 Exceção não capturada');
+    process.on('SIGTERM', () => {
+      console.log('🛑 Encerrando aplicação via SIGTERM...');
+      shutdown(server);
+    });
+
+    process.on('uncaughtException', err => {
+      console.error('💥 Exceção não capturada:', err);
+      process.exit(1);
+    });
+
+    process.on('unhandledRejection', reason => {
+      console.error('💥 Promessa rejeitada não tratada:', reason);
+      process.exit(1);
+    });
+  } catch (error) {
+    console.error('❌ Erro durante a inicialização da aplicação:', error);
     process.exit(1);
-  });
-
-  process.on('unhandledRejection', reason => {
-    // console.log({ reason }, '💥 Promessa rejeitada não tratada');
-    process.exit(1);
-  });
+  }
 }
 
 function shutdown(server: import('http').Server) {

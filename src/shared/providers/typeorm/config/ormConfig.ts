@@ -22,4 +22,7 @@ export default new DataSource({
       ? path.resolve(__dirname, '../migrations/*.ts')
       : path.resolve(__dirname, '../migrations/*.js'),
   ],
+  ssl: {
+    rejectUnauthorized: false, // ESSENCIAL para Neon
+  },
 });
